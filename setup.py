@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pygdoc',
-    version='0.1.0',
+    version='0.1.1',
     packages=find_packages(),
     install_requires=[
         'pandas',
@@ -20,7 +20,7 @@ setup(
     description='A package to manage Google Docs using Python.',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
-    url='https://github.com/yourusername/your_package',
+    url='https://github.com/dsottimano/pygdoc',
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: MIT License',

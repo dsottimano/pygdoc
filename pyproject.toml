@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pygdoc"
-version = "0.1.0"
+version = "0.1.1
 description = "A Python class for managing Google Docs"
 authors = [{name = "David Sottimano", email = "dsottimano@gmail.com"}]
 license = {file = "LICENSE"}
