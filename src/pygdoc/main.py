@@ -5,19 +5,30 @@ from google.oauth2 import service_account
 from gdoctableapppy import gdoctableapp
 import time
 import random
+import os
+import json
 
 class GoogleDocManager:
-    def __init__(self, service_account_file, delay=2, max_retries=5):
+    def __init__(self, service_account_info, delay=2, max_retries=5):
         """
-        Initialize the GoogleDocManager with the given service account file.
+        Initialize the GoogleDocManager with the given service account info.
 
         Args:
-            service_account_file (str): Path to the service account JSON file.
+            service_account_info (str or dict): Path to the service account JSON file, the service account info dictionary, or the name of an environment variable containing the service account info.
             delay (int): Initial delay between retries in seconds (default is 2).
             max_retries (int): Maximum number of retries (default is 5).
         """
         self.scopes = ['https://www.googleapis.com/auth/documents', 'https://www.googleapis.com/auth/drive']
-        self.creds = service_account.Credentials.from_service_account_file(service_account_file, scopes=self.scopes)
+        
+        if isinstance(service_account_info, str):
+            if service_account_info in os.environ:
+                service_account_info = json.loads(os.environ[service_account_info])
+                self.creds = service_account.Credentials.from_service_account_info(service_account_info, scopes=self.scopes)
+            else:
+                self.creds = service_account.Credentials.from_service_account_file(service_account_info, scopes=self.scopes)
+        else:
+            self.creds = service_account.Credentials.from_service_account_info(service_account_info, scopes=self.scopes)
+        
         self.service = build('docs', 'v1', credentials=self.creds)
         self.drive_service = build('drive', 'v3', credentials=self.creds)
         self.document_id = None
@@ -53,7 +64,7 @@ class GoogleDocManager:
             print(f'Document already exists with ID: {self.document_id}')
         else:
             body = {'title': title}
-            doc = self.retry_with_exponential_backoff(self.service.documents().create, body=body)
+            doc = self.service.documents().create(body=body).execute()
             self.document_id = doc.get('documentId')
         document_url = f"https://docs.google.com/document/d/{self.document_id}/edit"
         print(document_url)
@@ -69,7 +80,7 @@ class GoogleDocManager:
             role (str): The role to assign to the email (default is 'writer').
         """
         permission = {'type': 'user', 'role': role, 'emailAddress': email}
-        self.retry_with_exponential_backoff(self.drive_service.permissions().create, fileId=file_id, body=permission)
+        self.drive_service.permissions().create(fileId=file_id, body=permission).execute()
 
     def insert_text_to_doc(self, text, index):
         """
@@ -118,13 +129,14 @@ class GoogleDocManager:
         requests = [{'insertInlineImage': {'location': {'index': index}, 'uri': image_url, 'objectSize': {'height': {'magnitude': height, 'unit': 'PT'}, 'width': {'magnitude': width, 'unit': 'PT'}}}}]
         self.retry_with_exponential_backoff(self.service.documents().batchUpdate, documentId=self.document_id, body={'requests': requests})
 
-    def retry_with_exponential_backoff(self, func, *args):
+    def retry_with_exponential_backoff(self, func, *args, **kwargs):
         """
         Retry a function with exponential backoff.
 
         Args:
             func (callable): The function to retry.
             *args: Arguments to pass to the function.
+            **kwargs: Keyword arguments to pass to the function.
 
         Returns:
             Any: The return value of the function, if successful.
@@ -136,7 +148,7 @@ class GoogleDocManager:
         current_delay = self.delay
         while attempt < self.max_retries:
             try:
-                return func(*args).execute()
+                return func(*args, **kwargs).execute()  # Ensure execute() is called here
             except Exception as e:
                 attempt += 1
                 print(f"Error on attempt {attempt}: {e}")

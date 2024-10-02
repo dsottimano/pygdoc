@@ -1,6 +1,6 @@
 # Pygdoc
 
-Pygdoc is a Python class that provides a convenient interface for managing Google Docs. It allows you to create, share, and manipulate Google Docs using the Google Docs API and Google Drive API.
+Pygdoc is a Python package that provides a convenient interface for managing Google Docs. It allows you to create, share, and manipulate Google Docs using the Google Docs API and Google Drive API.
 
 ## Features
 
@@ -10,38 +10,43 @@ Pygdoc is a Python class that provides a convenient interface for managing Googl
 - Insert multiple paragraphs into a Google Doc
 - Create a table in a Google Doc from a pandas DataFrame
 - Replace occurrences of a target string with a page break
+- Retry operations with exponential backoff
+
+## Installtion on colab
+
+!pip install https://github.com/dsottimano/pygdoc/archive/refs/heads/main.zip
 
 ## Installation
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/yourusername/your-repo.git
-    cd your-repo
+    git clone https://github.com/dsottimano/pygdoc.git
+    cd pygdoc
     ```
 
-2. Create a virtual environment:
+2. Install the package:
     ```sh
-    python -m venv .venv
-    source .venv/bin/activate  # On Windows use `.venv\Scripts\activate`
-    ```
-
-3. Install the required dependencies:
-    ```sh
-    pip install -r requirements.txt
+    pip install .
     ```
 
 ## Usage
 
 ### Initialization
 
-To use the `GoogleDocManager`, you need to initialize it with your service account file:
+To use the `GoogleDocManager`, you need to initialize it with your service account file or service file content from an env var:
 
 ```python
-from pygdoc.main import GoogleDocManager
+from pygdoc import GoogleDocManager
 
 service_account_file = 'path/to/your/service_account.json'
-doc_manager = GoogleDocManager(service_account_file)
+doc_manager = GoogleDocManager(service_account_file, scopes)
 ```
+```python
+service_account_file = os.environ['GOOGLE_SERVICE_ACCOUNT_FILE']
+doc_manager = GoogleDocManager(service_account_info=service_account_file)
+```
+
+
 
 ### Creating a New Google Doc
 
@@ -117,4 +122,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Contact
 
-For any questions or inquiries, please contact [yourname@example.com](mailto:yourname@example.com).
+For any questions or inquiries, please contact dsottimano@gmail.com.
