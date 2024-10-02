@@ -12,9 +12,29 @@ Pygdoc is a Python package that provides a convenient interface for managing Goo
 - Replace occurrences of a target string with a page break
 - Retry operations with exponential backoff
 
-## Installtion on colab
+## Instalation on colab and usage
 
-!pip install https://github.com/dsottimano/pygdoc/archive/refs/heads/main.zip
+!pip install https://github.com/dsottimano/pygdoc/archive/refs/heads/main.zip --quiet
+
+from pygdoc import GoogleDocManager
+import pandas as pd
+import os,json
+from google.colab import userdata
+# Get the service account JSON content
+service_account_content = userdata.get('SERVICE_ACCOUNT')
+
+# Parse the JSON content
+service_account_info = json.loads(service_account_content)
+
+# Initialize the GoogleDocManager with the parsed JSON content
+doc_manager = GoogleDocManager(service_account_info=service_account_info)
+
+# Create a new Google Doc
+doc_id = doc_manager.create_google_doc("My New Document", force=True)
+print(doc_id)
+
+# Share the document
+doc_manager.share_google_doc(doc_id, "dsottimano@gmail.com")
 
 ## Installation
 

@@ -25,7 +25,7 @@ class GoogleDocManager:
                 service_account_info = json.loads(os.environ[service_account_info])
                 self.creds = service_account.Credentials.from_service_account_info(service_account_info, scopes=self.scopes)
             else:
-                self.creds = service_account.Credentials.from_service_account_file(service_account_info, scopes=self.scopes)
+                self.creds = service_account.Credentials.from_service_account_info(service_account_info, scopes=self.scopes)
         else:
             self.creds = service_account.Credentials.from_service_account_info(service_account_info, scopes=self.scopes)
         
@@ -70,17 +70,42 @@ class GoogleDocManager:
         print(document_url)
         return self.document_id
 
-    def share_google_doc(self, file_id, email, role='writer'):
+    def set_google_doc(self, document_id):
         """
-        Share the Google Doc with a specified email.
+        Use an existing Google Doc by setting its document ID.
+
+        Args:
+            document_id (str): The ID of the existing document.
+        """
+        self.document_id = document_id
+        document_url = f"https://docs.google.com/document/d/{self.document_id}/edit"
+        print(f"Access approved: {document_url}")
+
+    def get_current_document(self):
+        """
+        Get the current document ID and URL.
+
+        Returns:
+            tuple: The document ID and URL of the current document.
+        """
+        if not self.document_id:
+            print("No document is currently being used.")
+            return None, None
+        document_url = f"https://docs.google.com/document/d/{self.document_id}/edit"
+        return self.document_id, document_url
+
+    def share_google_doc(self, file_id, emails, role='writer'):
+        """
+        Share the Google Doc with specified emails.
 
         Args:
             file_id (str): The ID of the file to share.
-            email (str): The email address to share the document with.
-            role (str): The role to assign to the email (default is 'writer').
+            emails (list): The list of email addresses to share the document with.
+            role (str): The role to assign to the emails (default is 'writer').
         """
-        permission = {'type': 'user', 'role': role, 'emailAddress': email}
-        self.drive_service.permissions().create(fileId=file_id, body=permission).execute()
+        for email in emails:
+            permission = {'type': 'user', 'role': role, 'emailAddress': email}
+            self.drive_service.permissions().create(fileId=file_id, body=permission).execute()
 
     def insert_text_to_doc(self, text, index):
         """
